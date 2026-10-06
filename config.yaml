@@ -28,6 +28,6 @@ chains:
     contracts:
       # REPLACE both addresses with your deployed contracts before deploying
       - name: AgentRegistry
-        address: "0x0000000000000000000000000000000000000000"
+        address: 0x58a6ac5d9f0d1d1f432fbe7793c0e84f818b397d
       - name: AgentEscrow
-        address: "0x0000000000000000000000000000000000000000"
+        address: 0x05167647cb848c45ae20d037c1dbad0a1e80daa7
