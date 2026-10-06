@@ -1,0 +1,58 @@
+# Agent Trust Indexer — schema
+# Depth: derived/aggregated entities (Agent trust scores, NetworkStats),
+# relations (Agent <-> Attestation, Agent <-> Task), not a single-event indexer.
+
+type Agent @entity {
+  id: ID!                 # on-chain agentId
+  owner: String!
+  metadataURI: String!
+  registeredAt: BigInt!
+  active: Boolean!
+
+  # derived trust aggregates
+  positive: Int!
+  negative: Int!
+  score: Int!             # positive - negative
+  earnedWei: BigInt!      # sum of Released amounts paid to this agent
+  tasksAccepted: Int!
+  tasksCompleted: Int!
+  tasksDisputed: Int!
+  successRateBps: Int!    # completed / accepted, basis points
+
+  attestations: [Attestation!]! @derivedFrom(field: "agent")
+  tasks: [Task!]! @derivedFrom(field: "agent")
+}
+
+type Attestation @entity {
+  id: ID!                 # agentId-validator
+  agent: Agent!
+  validator: String!
+  positive: Boolean!
+  tag: String!
+  at: BigInt!
+}
+
+type Task @entity {
+  id: ID!                 # on-chain taskId
+  client: String!
+  agent: Agent            # null until accepted (open tasks)
+  worker: String
+  rewardWei: BigInt!
+  status: String!         # Open | Accepted | Submitted | Released | Refunded | Disputed | Resolved
+  specURI: String!
+  proofURI: String
+  acceptBy: BigInt!
+  createdAt: BigInt!
+  settledAt: BigInt
+}
+
+type NetworkStats @entity {
+  id: ID!                 # "stats"
+  agents: Int!
+  tasks: Int!
+  attestations: Int!
+  volumeWei: BigInt!      # sum of rewards locked
+  releasedWei: BigInt!    # sum paid to workers
+  refundedWei: BigInt!    # sum returned to clients
+  disputes: Int!
+}

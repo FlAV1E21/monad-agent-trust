@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: agent-trust-indexer
+description: >
+  HyperIndex powering live reputation and escrow analytics for autonomous
+  AI agents on Monad testnet. Aggregates registry attestations and escrow
+  cash-flow events into derived per-agent trust scores and network stats.
+
+contracts:
+  - name: AgentRegistry
+    events:
+      - event: "AgentRegistered(uint256 indexed agentId, address indexed owner, string metadataURI)"
+      - event: "AgentStatus(uint256 indexed agentId, bool active)"
+      - event: "Attested(uint256 indexed agentId, address indexed validator, bool positive, string tag)"
+  - name: AgentEscrow
+    events:
+      - event: "TaskCreated(uint256 indexed id, address indexed client, uint256 agentId, uint256 reward, uint64 acceptBy, string specURI)"
+      - event: "TaskAccepted(uint256 indexed id, uint256 indexed agentId, address indexed worker)"
+      - event: "ProofSubmitted(uint256 indexed id, string proofURI)"
+      - event: "Released(uint256 indexed id, address indexed to, uint256 amount)"
+      - event: "Refunded(uint256 indexed id, address indexed to, uint256 amount)"
+      - event: "Disputed(uint256 indexed id, address indexed by)"
+      - event: "Resolved(uint256 indexed id, bool payWorker)"
+
+chains:
+  - id: 10143 # Monad testnet
+    start_block: 0 # HyperSync auto-skips to first block with our events
+    rpc: https://testnet-rpc.monad.xyz # fallback only; HyperSync is primary
+    contracts:
+      # REPLACE both addresses with your deployed contracts before deploying
+      - name: AgentRegistry
+        address: "0x0000000000000000000000000000000000000000"
+      - name: AgentEscrow
+        address: "0x0000000000000000000000000000000000000000"
