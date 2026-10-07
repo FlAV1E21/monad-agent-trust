@@ -60,13 +60,13 @@ Indexer (requires Node ≥ 22):
 
 ```bash
 pnpm install
-# put your two deployed addresses into config.yaml
+# contract addresses are already set in config.yaml
 pnpm codegen
 pnpm test          # 3 suites, simulate mode, no network needed
 pnpm typecheck
 # deploy:
 npx envio-cloud login            # browser login
-npx envio-cloud indexer add --name agent-trust-indexer --repo FIAV1E21/monad-agent-trust --branch main
+npx envio-cloud indexer add --name agent-trust-indexer --repo FlAV1E21/monad-agent-trust --branch main
 npx envio-cloud deployment status agent-trust-indexer <commit> --watch-till-synced
 ```
 
@@ -96,9 +96,11 @@ Example GraphQL query the dapp runs:
 
 | Item | Value |
 |---|---|
-| AgentRegistry (Monad testnet) | `0x…` filled at submission |
-| AgentEscrow (Monad testnet) | `0x…` filled at submission |
-| HyperIndex GraphQL endpoint | filled at submission |
+| AgentRegistry (Monad testnet) | [`0x58a6ac5d9f0d1d1f432fbe7793c0e84f818b397d`](https://testnet.monadscan.com/address/0x58a6ac5d9f0d1d1f432fbe7793c0e84f818b397d) (deployed at block ~68755464) |
+| AgentEscrow (Monad testnet) | [`0x05167647cb848c45ae20d037c1dbad0a1e80daa7`](https://testnet.monadscan.com/address/0x05167647cb848c45ae20d037c1dbad0a1e80daa7) |
+| HyperIndex GraphQL endpoint | _filled after Envio Cloud deployment_ |
+| Live dapp | _filled after publishing_ |
+| Demo video | _filled after recording_ |
 | License | MIT |
 
 ## AI disclosure
