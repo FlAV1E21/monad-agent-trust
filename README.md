@@ -106,3 +106,7 @@ Example GraphQL query the dapp runs:
 ## AI disclosure
 
 This project was built solo with AI assistance (code drafting, docs research). Every contract, handler and test was reviewed, compiled and executed by the author before submission; the test suites and the live demo are the proof of work.
+
+## Status
+
+- Live indexer: deployed on Envio Cloud (Development tier), deployment branch `main`.
