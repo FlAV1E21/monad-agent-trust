@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -117,7 +118,7 @@
 const CHAIN_ID = 10143;
 const REGISTRY = "0x58a6ac5d9f0d1d1f432fbe7793c0e84f818b397d"; // deployed AgentRegistry (Monad testnet)
 const ESCROW   = "0x05167647cb848c45ae20d037c1dbad0a1e80daa7"; // deployed AgentEscrow (Monad testnet)
-const INDEXER_URL = ""; // TODO: paste your Envio Cloud GraphQL endpoint here after deploying (looks like https://<id>.envio.dev/v1/graphql)
+const INDEXER_URL = "https://indexer.dev.hyperindex.xyz/453703c/v1/graphql"; // TODO: paste your Envio Cloud GraphQL endpoint URL here (copy it from your indexer page in the Envio Cloud dashboard at envio.dev/app)
 
 const REG_ABI = [
   "function registerAgent(string metadataURI) returns (uint256)",
@@ -168,10 +169,10 @@ async function loadIndexer() {
   if (!INDEXER_URL) { state.textContent = "GraphQL URL not set (edit INDEXER_URL in index.html)"; $("lbSrc").textContent = ""; return; }
   try {
     const q = `{
-      agents(orderBy: score, orderDirection: desc, first: 10) {
+      Agent(order_by: {score: desc}, limit: 10) {
         id score positive negative tasksCompleted tasksAccepted tasksDisputed successRateBps earnedWei active owner
       }
-      tasks(orderBy: createdAt, orderDirection: desc, first: 6) {
+      Task(order_by: {createdAt: desc}, limit: 6) {
         id status client worker rewardWei
       }
     }`;
@@ -183,13 +184,13 @@ async function loadIndexer() {
     if (j.errors) throw new Error(j.errors[0].message);
     state.textContent = "live · " + new Date().toLocaleTimeString();
     $("lbSrc").textContent = "· via Envio HyperIndex";
-    $("agents").innerHTML = (j.data.agents || []).map((a, i) => `<tr>
+    $("agents").innerHTML = (j.data.Agent || []).map((a, i) => `<tr>
       <td>${i+1}</td><td class="mono">#${a.id} ${short(a.owner)}</td><td><b>${a.score}</b></td>
       <td>${a.positive} / ${a.negative}</td><td>${a.tasksCompleted}</td>
       <td>${(a.successRateBps/100).toFixed(0)}%</td><td>${mon(a.earnedWei)}</td>
       <td>${a.active ? '<span class="badge ok">active</span>' : '<span class="badge bad">paused</span>'}</td></tr>`).join("")
       || `<tr><td colspan="8">No agents indexed yet — register one on the right.</td></tr>`;
-    $("tasks").innerHTML = (j.data.tasks || []).map((t) => `<tr>
+    $("tasks").innerHTML = (j.data.Task || []).map((t) => `<tr>
       <td class="mono">#${t.id}</td><td>${t.status}</td><td class="mono">${short(t.client)}</td>
       <td class="mono">${short(t.worker)}</td><td>${mon(t.rewardWei)}</td></tr>`).join("")
       || `<tr><td colspan="5">No tasks yet.</td></tr>`;
