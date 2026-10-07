@@ -58,17 +58,24 @@ forge build   # or paste contracts/*.sol into Remix and compile 0.8.24
 
 Indexer (requires Node ≥ 22):
 
+Requires **Node.js >= 22.15** (`envio` CLI requirement).
+
 ```bash
 pnpm install
 # contract addresses are already set in config.yaml
 pnpm codegen
 pnpm test          # 3 suites, simulate mode, no network needed
 pnpm typecheck
-# deploy:
-npx envio-cloud login            # browser login
-npx envio-cloud indexer add --name agent-trust-indexer --repo FlAV1E21/monad-agent-trust --branch main
-npx envio-cloud deployment status agent-trust-indexer <commit> --watch-till-synced
 ```
+
+Deploy to **Envio Cloud** (git-based, like Vercel):
+
+1. Log in at [envio.dev/app](https://envio.dev/app) with GitHub.
+2. Install the *Envio Deployments* GitHub App on this repository.
+3. *Add Indexer* -> name `agent-trust-indexer`, repo `FlAV1E21/monad-agent-trust`, config file `config.yaml`, root dir `./`, deployment branch `main`, tier `Development`, access `Public`.
+4. Every push to `main` builds and redeploys; watch build/sync status in the dashboard and copy the GraphQL endpoint URL from the indexer page.
+
+(The alpha `envio-cloud` CLI can do the same from a terminal: `npx envio-cloud login && npx envio-cloud indexer add --name agent-trust-indexer --repo FlAV1E21/monad-agent-trust --branch main`.)
 
 Dapp: open `web/index.html`, paste the two contract addresses and the Envio Cloud GraphQL URL into the CONFIG block, serve statically (GitHub Pages works).
 
@@ -76,11 +83,14 @@ Example GraphQL query the dapp runs:
 
 ```graphql
 {
-  agents(orderBy: score, orderDirection: desc, first: 10) {
+  Agent(order_by: {score: desc}, limit: 10) {
     id score positive negative tasksCompleted successRateBps earnedWei active
   }
-  tasks(orderBy: createdAt, orderDirection: desc, first: 6) {
+  Task(order_by: {createdAt: desc}, limit: 6) {
     id status client worker rewardWei
+  }
+  NetworkStats_by_pk(id: "stats") {
+    agents tasks attestations volumeWei releasedWei refundedWei disputes
   }
 }
 ```
@@ -98,9 +108,9 @@ Example GraphQL query the dapp runs:
 |---|---|
 | AgentRegistry (Monad testnet) | [`0x58a6ac5d9f0d1d1f432fbe7793c0e84f818b397d`](https://testnet.monadscan.com/address/0x58a6ac5d9f0d1d1f432fbe7793c0e84f818b397d) (deployed at block ~68755464) |
 | AgentEscrow (Monad testnet) | [`0x05167647cb848c45ae20d037c1dbad0a1e80daa7`](https://testnet.monadscan.com/address/0x05167647cb848c45ae20d037c1dbad0a1e80daa7) |
-| HyperIndex GraphQL endpoint | _filled after Envio Cloud deployment_ |
-| Live dapp | _filled after publishing_ |
-| Demo video | _filled after recording_ |
+| HyperIndex GraphQL endpoint | https://indexer.dev.hyperindex.xyz/453703c/v1/graphql (Envio Cloud, Development tier, deployment 6b48487) |
+| Live dapp | https://flav1e21.github.io/monad-agent-trust/ |
+| Demo video | TODO-PASTE-VIDEO-URL |
 | License | MIT |
 
 ## AI disclosure
@@ -109,4 +119,7 @@ This project was built solo with AI assistance (code drafting, docs research). E
 
 ## Status
 
-- Live indexer: deployed on Envio Cloud (Development tier), deployment branch `main`.
+- Contracts: deployed on Monad testnet (addresses above, verified on-chain).
+- Indexer: deployed on Envio Cloud (Development tier), deployment branch `main`, syncing from block 68,755,000 via HyperSync.
+- Tests: 3/3 passing (`pnpm test`, simulate mode), `pnpm typecheck` clean.
+- Dapp: published on GitHub Pages (URL above), polls the HyperIndex GraphQL endpoint every 15 s.
