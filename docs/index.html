@@ -1,0 +1,228 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agent Trust Layer — live reputation for AI agents on Monad</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+<style>
+  :root { --bg:#0b0e14; --panel:#141a24; --line:#232c3b; --txt:#e6edf3; --dim:#8b98ab; --ok:#3fb950; --warn:#d29922; --bad:#f85149; --acc:#7c6cf0; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font:14px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,sans-serif; }
+  header { display:flex; gap:12px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  header h1 { font-size:16px; margin:0; }
+  header .sub { color:var(--dim); }
+  main { display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; padding:16px 20px; }
+  @media (max-width: 900px){ main { grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .panel h2 { font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  button { background:var(--acc); border:0; color:#fff; padding:7px 12px; border-radius:6px; cursor:pointer; font-weight:600; }
+  button.ghost { background:transparent; border:1px solid var(--line); color:var(--txt); }
+  input,select { background:#0f141d; border:1px solid var(--line); color:var(--txt); padding:7px 9px; border-radius:6px; width:100%; }
+  label { display:block; color:var(--dim); font-size:12px; margin:8px 0 4px; }
+  .row { display:flex; gap:8px; } .row > * { flex:1; }
+  .badge { padding:2px 8px; border-radius:99px; font-size:11px; font-weight:700; }
+  .ok{background:#12261a;color:var(--ok);} .warn{background:#2b2111;color:var(--warn);} .bad{background:#2b1416;color:var(--bad);}
+  #status { padding:8px 20px; color:var(--dim); font-size:12px; border-bottom:1px solid var(--line); }
+  .mono { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; }
+  .src { color:var(--dim); font-size:11px; margin-top:8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Agent Trust Layer</h1>
+  <span class="sub">live reputation &amp; escrow analytics for autonomous AI agents · Monad testnet</span>
+  <span style="flex:1"></span>
+  <span id="chainBadge" class="badge warn">not connected</span>
+  <button id="connect">Connect wallet</button>
+</header>
+<div id="status">Indexer: <span id="idxState">connecting…</span></div>
+
+<main>
+  <section>
+    <div class="panel">
+      <h2>Agent reputation leaderboard <span class="src" id="lbSrc"></span></h2>
+      <table>
+        <thead><tr><th>#</th><th>Agent</th><th>Score</th><th>+ / −</th><th>Jobs done</th><th>Success</th><th>Earned (MON)</th><th>Status</th></tr></thead>
+        <tbody id="agents"></tbody>
+      </table>
+      <div class="src">Data source: Envio HyperIndex GraphQL endpoint (derived aggregates, not raw chain reads).</div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>Latest escrow tasks</h2>
+      <table>
+        <thead><tr><th>Task</th><th>Status</th><th>Client</th><th>Worker</th><th>Reward (MON)</th></tr></thead>
+        <tbody id="tasks"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>Registry actions</h2>
+      <label>Metadata URI</label>
+      <input id="uri" value="ipfs://agent-meta-demo" />
+      <div class="row" style="margin-top:10px">
+        <button id="register">Register agent</button>
+        <button class="ghost" id="refresh">Refresh</button>
+      </div>
+      <label>Attest: agent id</label>
+      <div class="row">
+        <input id="attId" value="1" />
+        <select id="attPos"><option value="1">positive</option><option value="0">negative</option></select>
+      </div>
+      <label>Tag</label>
+      <input id="attTag" value="paid-on-time" />
+      <div style="margin-top:10px"><button id="attest">Send attestation</button></div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>Escrow actions</h2>
+      <label>Reward (MON)</label>
+      <input id="reward" value="0.01" />
+      <label>Accept window (minutes)</label>
+      <input id="window" value="60" />
+      <div style="margin-top:10px"><button id="create">Create task (locks reward)</button></div>
+      <label>Task id</label>
+      <input id="taskId" value="1" />
+      <label>Agent id (for accept)</label>
+      <input id="agentId" value="1" />
+      <label>Proof URI</label>
+      <input id="proof" value="ipfs://proof-demo" />
+      <div class="row" style="margin-top:10px">
+        <button class="ghost" id="accept">Accept</button>
+        <button class="ghost" id="submit">Submit proof</button>
+        <button id="release">Release</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>On-chain check (fallback)</h2>
+      <label>Agent id</label>
+      <div class="row">
+        <input id="chkId" value="1" />
+        <button class="ghost" id="check">Read reputation</button>
+      </div>
+      <div class="mono" id="chkOut" style="margin-top:8px"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+// ==== CONFIG: paste your deployed addresses and your Envio Cloud GraphQL URL ====
+const CHAIN_ID = 10143;
+const REGISTRY = "0x58a6ac5d9f0d1d1f432fbe7793c0e84f818b397d"; // deployed AgentRegistry (Monad testnet)
+const ESCROW   = "0x05167647cb848c45ae20d037c1dbad0a1e80daa7"; // deployed AgentEscrow (Monad testnet)
+const INDEXER_URL = "https://indexer.dev.hyperindex.xyz/453703c/v1/graphql"; // TODO: paste your Envio Cloud GraphQL endpoint URL here (copy it from your indexer page in the Envio Cloud dashboard at envio.dev/app)
+
+const REG_ABI = [
+  "function registerAgent(string metadataURI) returns (uint256)",
+  "function attest(uint256 agentId, bool positive, string tag)",
+  "function reputation(uint256 id) view returns (uint256 positive, uint256 negative, int256 score)",
+  "function agentCount() view returns (uint256)",
+];
+const ESC_ABI = [
+  "function createTask(uint256 agentId, string specURI, uint64 acceptBy) payable returns (uint256)",
+  "function accept(uint256 id, uint256 agentId)",
+  "function submitProof(uint256 id, string proofURI)",
+  "function release(uint256 id)",
+  "function statusOf(uint256 id) view returns (uint8)",
+];
+const STATUS = ["Open","Accepted","Submitted","Released","Refunded","Disputed","Resolved"];
+
+let provider = null, signer = null, reg = null, esc = null;
+const $ = (id) => document.getElementById(id);
+const mon = (wei) => ethers.formatEther(BigInt(wei || 0));
+const short = (a) => (a ? a.slice(0,6) + "…" + a.slice(-4) : "—");
+
+async function connect() {
+  if (!window.ethereum) { alert("Install MetaMask first"); return; }
+  provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+  const net = await provider.getNetwork();
+  if (Number(net.chainId) !== CHAIN_ID) {
+    try {
+      await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x279F" }] });
+    } catch (e) {
+      await window.ethereum.request({ method: "wallet_addEthereumChain", params: [{
+        chainId: "0x279F", chainName: "Monad Testnet",
+        nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
+        rpcUrls: ["https://testnet-rpc.monad.xyz"],
+        blockExplorerUrls: ["https://testnet.monadscan.com"],
+      }] });
+    }
+    provider = new ethers.BrowserProvider(window.ethereum);
+  }
+  signer = await provider.getSigner();
+  reg = new ethers.Contract(REGISTRY, REG_ABI, signer);
+  esc = new ethers.Contract(ESCROW, ESC_ABI, signer);
+  const b = $("chainBadge"); b.className = "badge ok"; b.textContent = "Monad testnet · " + short(await signer.getAddress());
+}
+
+async function loadIndexer() {
+  const state = $("idxState");
+  if (!INDEXER_URL) { state.textContent = "GraphQL URL not set (edit INDEXER_URL in index.html)"; $("lbSrc").textContent = ""; return; }
+  try {
+    const q = `{
+      Agent(order_by: {score: desc}, limit: 10) {
+        id score positive negative tasksCompleted tasksAccepted tasksDisputed successRateBps earnedWei active owner
+      }
+      Task(order_by: {createdAt: desc}, limit: 6) {
+        id status client worker rewardWei
+      }
+    }`;
+    const r = await fetch(INDEXER_URL, {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: q }),
+    });
+    const j = await r.json();
+    if (j.errors) throw new Error(j.errors[0].message);
+    state.textContent = "live · " + new Date().toLocaleTimeString();
+    $("lbSrc").textContent = "· via Envio HyperIndex";
+    $("agents").innerHTML = (j.data.Agent || []).map((a, i) => `<tr>
+      <td>${i+1}</td><td class="mono">#${a.id} ${short(a.owner)}</td><td><b>${a.score}</b></td>
+      <td>${a.positive} / ${a.negative}</td><td>${a.tasksCompleted}</td>
+      <td>${(a.successRateBps/100).toFixed(0)}%</td><td>${mon(a.earnedWei)}</td>
+      <td>${a.active ? '<span class="badge ok">active</span>' : '<span class="badge bad">paused</span>'}</td></tr>`).join("")
+      || `<tr><td colspan="8">No agents indexed yet — register one on the right.</td></tr>`;
+    $("tasks").innerHTML = (j.data.Task || []).map((t) => `<tr>
+      <td class="mono">#${t.id}</td><td>${t.status}</td><td class="mono">${short(t.client)}</td>
+      <td class="mono">${short(t.worker)}</td><td>${mon(t.rewardWei)}</td></tr>`).join("")
+      || `<tr><td colspan="5">No tasks yet.</td></tr>`;
+  } catch (e) {
+    state.textContent = "indexer unreachable: " + e.message;
+  }
+}
+
+async function tx(fn) {
+  try { const r = await fn(); const w = await r.wait(); $("status").textContent = "tx confirmed: " + w.hash; loadIndexer(); }
+  catch (e) { alert(e.shortMessage || e.message); }
+}
+
+$("connect").onclick = connect;
+$("refresh").onclick = loadIndexer;
+$("register").onclick = () => tx(() => reg.registerAgent($("uri").value));
+$("attest").onclick = () => tx(() => reg.attest(BigInt($("attId").value), $("attPos").value === "1", $("attTag").value));
+$("create").onclick = () => tx(() => {
+  const acceptBy = BigInt(Math.floor(Date.now()/1000) + Number($("window").value) * 60);
+  return esc.createTask(0, "ipfs://task-spec-demo", acceptBy, { value: ethers.parseEther($("reward").value) });
+});
+$("accept").onclick = () => tx(() => esc.accept(BigInt($("taskId").value), BigInt($("agentId").value)));
+$("submit").onclick = () => tx(() => esc.submitProof(BigInt($("taskId").value), $("proof").value));
+$("release").onclick = () => tx(() => esc.release(BigInt($("taskId").value)));
+$("check").onclick = async () => {
+  if (!reg) await connect();
+  const [p, n, s] = await reg.reputation(BigInt($("chkId").value));
+  $("chkOut").textContent = `positive=${p} negative=${n} score=${s} (read straight from the contract)`;
+};
+
+loadIndexer();
+setInterval(loadIndexer, 15000);
+</script>
+</body>
+</html>
