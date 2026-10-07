@@ -23,9 +23,18 @@ contracts:
 
 chains:
   - id: 10143 # Monad testnet
-    start_block: 68755000 # contracts deployed at ~68755464; starting just before keeps sync instant
+    start_block: 68755000
+    rpc:
+      - url: https://monad-testnet.api.onfinality.io/public
+        for: sync
+        initial_block_interval: 2000
+        interval_ceiling: 8000
+        backoff_millis: 300
+      - url: https://monad-testnet.api.onfinality.io/public
+        for: realtime
+      - url: https://testnet-rpc.monad.xyz
+        for: fallback
     contracts:
-      # REPLACE both addresses with your deployed contracts before deploying
       - name: AgentRegistry
         address: 0x58a6ac5d9f0d1d1f432fbe7793c0e84f818b397d
       - name: AgentEscrow
