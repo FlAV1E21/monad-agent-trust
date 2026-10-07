@@ -1,0 +1,29 @@
+# Keepalive для Envio Cloud indexer'а во время judging (14–27 Oct).
+# Бесплатный Development-план начинает удалять деплоймент, если к нему
+# не обращаются 7 дней. Этот workflow делает запрос к GraphQL каждые 6 часов.
+#
+# КАК ПОДКЛЮЧИТЬ:
+# 1. Вставьте ваш GraphQL endpoint вместо https://indexer.dev.hyperindex.xyz/453703c/v1/graphql ниже.
+# 2. На GitHub: репозиторий -> Add file -> Create new file
+#    -> имя файла: .github/workflows/indexer-keepalive.yml
+#    -> вставьте это содержимое -> Commit changes.
+
+name: indexer-keepalive
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Envio GraphQL endpoint
+        run: |
+          curl -s -X POST "https://indexer.dev.hyperindex.xyz/453703c/v1/graphql" \
+            -H 'content-type: application/json' \
+            --data '{"query":"{ NetworkStats_by_pk(id: \"stats\") { agents tasks attestations volumeWei } }"}' \
+            | head -c 400
+          echo ""
+          echo "keepalive ping done"
