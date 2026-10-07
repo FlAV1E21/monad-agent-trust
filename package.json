@@ -2,16 +2,24 @@
   "name": "agent-trust-indexer",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Envio HyperIndex powering live reputation & escrow analytics for autonomous AI agents on Monad testnet",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "codegen": "envio codegen",
     "dev": "envio dev",
+    "start": "envio start",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "deploy": "envio-cloud login && envio-cloud indexer add --name agent-trust-indexer --repo FIAV1E21/monad-agent-trust --branch main"
+    "deploy": "envio-cloud login && envio-cloud indexer add --name agent-trust-indexer --repo FlAV1E21/monad-agent-trust --branch main"
+  },
+  "dependencies": {
+    "envio": "3.14.0"
   },
   "devDependencies": {
-    "envio": "latest",
+    "@types/node": "^22.15.0",
     "typescript": "^5.5.4",
     "vitest": "^3.0.0"
   }
