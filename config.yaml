@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=./node_modules/envio/evm.schema.json
 name: agent-trust-indexer
+handlers: src
 description: >
   HyperIndex powering live reputation and escrow analytics for autonomous
   AI agents on Monad testnet. Aggregates registry attestations and escrow
