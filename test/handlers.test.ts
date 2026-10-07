@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTestIndexer, TestHelpers } from "envio";
-import "../src/handlers";
+// handlers are auto-loaded via `handlers: src` in config.yaml
 
 const [client, worker, validator] = TestHelpers.Addresses.mockAddresses;
 const MON = 10n ** 18n;
