@@ -23,7 +23,7 @@ contracts:
 
 chains:
   - id: 10143 # Monad testnet
-    start_block: 0 # HyperSync auto-skips to first block with our events
+    start_block: 68755000 # contracts deployed at ~68755464; starting just before keeps sync instant
     rpc: https://testnet-rpc.monad.xyz # fallback only; HyperSync is primary
     contracts:
       # REPLACE both addresses with your deployed contracts before deploying
