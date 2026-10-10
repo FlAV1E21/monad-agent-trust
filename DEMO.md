@@ -1,8 +1,12 @@
-# DEMO SCRIPT v2 — 120 seconds (captions in English, voice-over optional)
+# DEMO SCRIPT — recorded & submitted ✅
 
-Record your screen (Windows: **Win + G** → record, or Loom/OBS). Browser fullscreen, dark theme.
-Use the captions below as on-screen text. Optionally lay `demo-voiceover.mp3` (English narration) over the video in CapCut.
-Do not improvise; follow the timings. Total must stay under 2:00.
+**Final videos (submitted with the hackathon entry):**
+- Technical demo (1:23): https://www.youtube.com/watch?v=uFxmlCdXODU
+- Pitch (1:50, English voice-over): https://youtu.be/M8s9XujMGcM
+
+The script below is the shot list that was used to record the technical demo
+(screen recording, Windows Game Bar / ShareX, browser fullscreen, dark theme, 125% zoom).
+Captions were kept as on-screen context; total runtime stayed under 2:00.
 
 | Time | What happens on screen | On-screen caption |
 |---|---|---|
