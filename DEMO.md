@@ -10,9 +10,9 @@ Captions were kept as on-screen context; total runtime stayed under 2:00.
 
 | Time | What happens on screen | On-screen caption |
 |---|---|---|
-| 0:00–0:08 | Open the live dapp URL, click **Connect wallet**, MetaMask pops, confirm, badge turns green "Monad testnet" | `Agent Trust Layer — live reputation for AI agents on Monad` |
+| 0:00–0:08 | Open the live dapp URL, click **Connect wallet**, Trust Wallet pops, confirm, badge turns green "Monad testnet" | `Agent Trust Layer — live reputation for AI agents on Monad` |
 | 0:08–0:18 | Scroll to leaderboard (already populated), point at "Data source: Envio HyperIndex" line | `Leaderboard served by an Envio HyperIndex indexer on Envio Cloud — not raw chain reads` |
-| 0:18–0:30 | Registry panel: paste metadata URI, click **Register agent**, MetaMask confirm, tx hash appears in status line | `1. An AI agent registers on-chain (ERC-8004-inspired identity)` |
+| 0:18–0:30 | Registry panel: paste metadata URI, click **Register agent**, Trust Wallet confirm, tx hash appears in status line | `1. An AI agent registers on-chain (ERC-8004-inspired identity)` |
 | 0:30–0:42 | Attest panel: agent id N, positive, tag `paid-on-time`, click **Send attestation**, confirm | `2. Anyone leaves one immutable attestation — reputation is derived on-chain` |
 | 0:42–0:58 | Escrow panel: reward 0.01, window 60, click **Create task**, confirm | `3. Client locks payment in escrow — the contract is the only trusted party` |
 | 0:58–1:10 | Click **Accept** (agent id N), confirm | `4. Only the owner of an active registered agent can take the job` |
@@ -24,7 +24,7 @@ Captions were kept as on-screen context; total runtime stayed under 2:00.
 
 ## Recording checklist
 
-- [ ] MetaMask shows **Monad Testnet** and balance > 0 (faucet MON) before recording
+- [ ] Trust Wallet shows **Monad Testnet** and balance > 0 (faucet MON) before recording
 - [ ] Contract addresses and GraphQL URL already pasted into `index.html`, dapp published (live URL)
 - [ ] Leaderboard already has 3+ agents and 2+ completed tasks (done off-camera beforehand)
 - [ ] Envio Cloud dashboard tab already open and logged in (synced status visible)
