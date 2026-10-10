@@ -141,7 +141,7 @@ const mon = (wei) => ethers.formatEther(BigInt(wei || 0));
 const short = (a) => (a ? a.slice(0,6) + "…" + a.slice(-4) : "—");
 
 async function connect() {
-  if (!window.ethereum) { alert("Install MetaMask first"); return; }
+  if (!window.ethereum) { alert("Install Trust Wallet first (browser extension)"); return; }
   provider = new ethers.BrowserProvider(window.ethereum);
   await provider.send("eth_requestAccounts", []);
   const net = await provider.getNetwork();
